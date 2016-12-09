@@ -38,6 +38,13 @@ public:
      */
     void Search(const string& path) const;
 
+    /**
+     * Display the distance between the indexed images.
+     * The image pairs whose distance is greater than max_distance are not displayed.
+     * @param max_distance Maximum distance between displayed image pair.
+     */
+    void Distances(int max_distance = 64) const;
+
 private:
     /**
      * List all image files in a directory.

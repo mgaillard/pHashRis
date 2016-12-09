@@ -36,7 +36,7 @@ void HashStore::Save(const string &filename) {
 
     if (file) {
         map<ulong64, string>::const_iterator itEntry;
-        for (itEntry = _entries.begin(); itEntry != _entries.end(); ++itEntry) {
+        for (itEntry = entries_.begin(); itEntry != entries_.end(); ++itEntry) {
             file << itEntry->first << " " << itEntry->second << endl;
         }
 
@@ -44,23 +44,26 @@ void HashStore::Save(const string &filename) {
     } else {
         cout << "Impossible to save the index file." << endl;
     }
+}
 
+const map<ulong64, string>& HashStore::Entries() const {
+    return entries_;
 }
 
 bool HashStore::Add(ulong64 file_hash, const string &file_path) {
     pair<map<ulong64, string>::const_iterator, bool> result;
 
-    result = _entries.insert(make_pair(file_hash, file_path));
+    result = entries_.insert(make_pair(file_hash, file_path));
 
     return result.second;
 }
 
 pair<string, int> HashStore::SearchNearest(ulong64 file_hash) const {
-    map<ulong64, string>::const_iterator itNearest = _entries.begin();
+    map<ulong64, string>::const_iterator itNearest = entries_.begin();
     int min_dist = ph_hamming_distance(file_hash, itNearest->first);
 
     map<ulong64, string>::const_iterator itEntry;
-    for (itEntry = next(_entries.begin()); itEntry != _entries.end(); ++itEntry) {
+    for (itEntry = next(entries_.begin()); itEntry != entries_.end(); ++itEntry) {
         int dist = ph_hamming_distance(file_hash, itEntry->first);
 
         if (dist < min_dist) {

@@ -64,6 +64,18 @@ void pHashRis::Search(const string& path) const {
     }
 }
 
+void pHashRis::Distances(int max_distance) const {
+    for (map<ulong64, string>::const_iterator itFirst = store_.Entries().begin();
+         itFirst != store_.Entries().end(); ++itFirst) {
+        for (map<ulong64, string>::const_iterator itSecond = next(itFirst);
+             itSecond != store_.Entries().end(); ++itSecond) {
+            int dist = ph_hamming_distance(itFirst->first, itSecond->first);
+            if (dist <= max_distance) {
+                cout << itFirst->second << "\t" << itSecond->second << "\t" << dist << endl;
+            }
+        }
+    }
+}
 
 vector<string> pHashRis::ListImages(const string &dir_path) const {
     vector<string> files;

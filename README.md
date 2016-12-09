@@ -7,6 +7,7 @@ Features
 
 - Index the images from a directory
 - Search for images even with slightly modified versions
+- Display the distances between the indexed images
 
 How it works ?
 --------------
@@ -37,6 +38,9 @@ $ ./pHashRis search <file_path>
 
 # Search for all the images in a directory
 $ ./pHashRis search <directory_path>
+
+# Display all image pairs whose distance is less than or equal to 16
+$ ./pHashRis distances 16
 ```
 
 License

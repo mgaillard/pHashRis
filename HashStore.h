@@ -24,6 +24,12 @@ public:
     void Save(const string &filename);
 
     /**
+     * Return a const map of all entries in the HashStore.
+     * @return A const map of all entries in the HashStore.
+     */
+    const map<ulong64, string>& Entries() const;
+
+    /**
      * Add a file to the store.
      * @param file_hash The file hash.
      * @param file_path The file path.
@@ -40,7 +46,7 @@ public:
     pair<string, int> SearchNearest(ulong64 file_hash) const;
 
 private:
-    map<ulong64, string> _entries;
+    map<ulong64, string> entries_;
 };
 
 #endif //PHASHRIS_HASHSTORE_H
