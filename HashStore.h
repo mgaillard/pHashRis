@@ -2,13 +2,18 @@
 #define PHASHRIS_HASHSTORE_H
 
 #include <string>
-#include <map>
+#include <vector>
 #include "pHash.h"
 
 using namespace std;
 
 class HashStore {
 public:
+    struct Entry {
+        ulong64 hash;
+        string file_path;
+    };
+
     HashStore();
 
     /**
@@ -24,10 +29,10 @@ public:
     void Save(const string &filename);
 
     /**
-     * Return a const map of all entries in the HashStore.
-     * @return A const map of all entries in the HashStore.
+     * Return a const vector of all entries in the HashStore.
+     * @return A const vector of all entries in the HashStore.
      */
-    const map<ulong64, string>& Entries() const;
+    const vector<Entry>& Entries() const;
 
     /**
      * Add a file to the store.
@@ -35,18 +40,18 @@ public:
      * @param file_path The file path.
      * @return True if the file has been added, false otherwise.
      */
-    bool Add(ulong64 file_hash, const string &file_path);
+    void Add(ulong64 file_hash, const string &file_path);
 
     /**
-     * Search for the nearest file in the store.
-     * This function is thread-safe.
+     * Search for the nearest files in the store.
+     * This function uses a parallel sequential search.
      * @param file_hash The query hash.
-     * @return A pair with the path to the nearest file and the distance to the query file.
+     * @return A vector with all the nearest files and the distance to the query file.
      */
-    pair<string, int> SearchNearest(ulong64 file_hash) const;
+    pair<vector<Entry>, int> SearchNearest(const ulong64 file_hash) const;
 
 private:
-    map<ulong64, string> entries_;
+    vector<Entry> entries_;
 };
 
 #endif //PHASHRIS_HASHSTORE_H

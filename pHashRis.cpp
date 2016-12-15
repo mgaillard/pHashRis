@@ -74,6 +74,8 @@ void pHashRis::Search(const string& path) const {
 }
 
 void pHashRis::DisplayIndexStatistics() const {
+    const vector<HashStore::Entry>& entries = store_.Entries();
+
     boost::array<double, 2> quantile_probs = {0.25, 0.75};
     accumulator_set<long long, stats<tag::min,
                                tag::median(with_p_square_quantile),
@@ -87,14 +89,16 @@ void pHashRis::DisplayIndexStatistics() const {
     array<long long, MAX_DISTANCE+1> histogram;
     histogram.fill(0);
 
-    for (map<ulong64, string>::const_iterator itFirst = store_.Entries().begin();
-         itFirst != store_.Entries().end(); ++itFirst) {
-        for (map<ulong64, string>::const_iterator itSecond = next(itFirst);
-             itSecond != store_.Entries().end(); ++itSecond) {
-            int dist = ph_hamming_distance(itFirst->first, itSecond->first);
+    #pragma omp parallel for shared(entries, acc, histogram)
+    for (unsigned int i = 0; i < entries.size(); i++) {
+        for (unsigned int j = i + 1; j < entries.size(); j++) {
+            int dist = ph_hamming_distance(entries[i].hash, entries[j].hash);
             // Push distance to the accumulator and histogram.
-            acc(dist);
-            histogram.at(dist)++;
+            #pragma omp critical(statistics)
+            {
+                acc(dist);
+                histogram.at(dist)++;
+            }
         }
     }
 
@@ -115,14 +119,18 @@ void pHashRis::DisplayIndexStatistics() const {
     }
 }
 
-void pHashRis::DisplayDistances(int max_distance) const {
-    for (map<ulong64, string>::const_iterator itFirst = store_.Entries().begin();
-         itFirst != store_.Entries().end(); ++itFirst) {
-        for (map<ulong64, string>::const_iterator itSecond = next(itFirst);
-             itSecond != store_.Entries().end(); ++itSecond) {
-            int dist = ph_hamming_distance(itFirst->first, itSecond->first);
+void pHashRis::DisplayDistances(const int max_distance) const {
+    const vector<HashStore::Entry>& entries = store_.Entries();
+
+    #pragma omp parallel for shared(entries)
+    for (unsigned int i = 0; i < entries.size(); i++) {
+        for (unsigned int j = i + 1; j < entries.size(); j++) {
+            int dist = ph_hamming_distance(entries[i].hash, entries[j].hash);
             if (dist <= max_distance) {
-                cout << itFirst->second << "\t" << itSecond->second << "\t" << dist << endl;
+                #pragma omp critical(output)
+                {
+                    cout << entries[i].file_path << "\t" << entries[j].file_path << "\t" << dist << endl;
+                }
             }
         }
     }
@@ -176,17 +184,18 @@ void pHashRis::IndexFiles(const vector<string>& files) {
 
 void pHashRis::SearchFiles(const vector<string>& files) const {
     ulong64 file_hash;
-    #pragma omp parallel for private(file_hash)
     for (unsigned int i = 0; i < files.size(); i++) {
         if (ph_dct_imagehash(files[i].c_str(), file_hash) >= 0) {
-            pair<string, int> result = store_.SearchNearest(file_hash);
-            #pragma omp critical(output)
-            {
-                cout << "Query : " << files[i].c_str() << endl
-                     << "Found : " << result.first << endl
-                     << "distance = " << result.second << endl
-                     << endl;
+            pair<vector<HashStore::Entry>, int> result = store_.SearchNearest(file_hash);
+
+            cout << "Query : " << files[i].c_str() << "\n";
+            cout << "Found " << result.first.size() << " files\n";
+            for (vector<HashStore::Entry>::const_iterator it = result.first.begin();it != result.first.end();++it) {
+                cout << "\t" << it->file_path << "\n";
             }
+            cout << "Distance = " << result.second << "\n";
+            cout << endl;
+
         } else {
             cout << "Error while calculating the hash of the file " << files[i] << "." << endl;
         }

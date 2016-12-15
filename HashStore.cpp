@@ -1,5 +1,5 @@
 #include <iostream>
-#include <iterator>
+#include <limits>
 #include <fstream>
 #include "pHash.h"
 
@@ -35,9 +35,9 @@ void HashStore::Save(const string &filename) {
     ofstream file(filename, ios::out | ios::trunc);
 
     if (file) {
-        map<ulong64, string>::const_iterator itEntry;
+        vector<HashStore::Entry>::const_iterator itEntry;
         for (itEntry = entries_.begin(); itEntry != entries_.end(); ++itEntry) {
-            file << itEntry->first << " " << itEntry->second << endl;
+            file << itEntry->hash << " " << itEntry->file_path << endl;
         }
 
         file.close();
@@ -46,32 +46,37 @@ void HashStore::Save(const string &filename) {
     }
 }
 
-const map<ulong64, string>& HashStore::Entries() const {
+const vector<HashStore::Entry>& HashStore::Entries() const {
     return entries_;
 }
 
-bool HashStore::Add(ulong64 file_hash, const string &file_path) {
-    pair<map<ulong64, string>::const_iterator, bool> result;
+void HashStore::Add(ulong64 file_hash, const string &file_path) {
+    HashStore::Entry entry;
+    entry.hash = file_hash;
+    entry.file_path = file_path;
 
-    result = entries_.insert(make_pair(file_hash, file_path));
-
-    return result.second;
+    entries_.push_back(entry);
 }
 
-pair<string, int> HashStore::SearchNearest(ulong64 file_hash) const {
-    map<ulong64, string>::const_iterator itNearest = entries_.begin();
-    int min_dist = ph_hamming_distance(file_hash, itNearest->first);
+pair<vector<HashStore::Entry>, int> HashStore::SearchNearest(const ulong64 file_hash) const {
+    vector<HashStore::Entry> result;
+    int min_dist = numeric_limits<int>::max();
 
-    map<ulong64, string>::const_iterator itEntry;
-    for (itEntry = next(entries_.begin()); itEntry != entries_.end(); ++itEntry) {
-        int dist = ph_hamming_distance(file_hash, itEntry->first);
-
-        if (dist < min_dist) {
-            min_dist = dist;
-            itNearest = itEntry;
+    #pragma omp parallel for shared(min_dist, result)
+    for (unsigned int i = 0; i < entries_.size(); i++) {
+        int dist = ph_hamming_distance(file_hash, entries_[i].hash);
+        #pragma omp critical(search_min)
+        {
+            if (dist < min_dist) {
+                min_dist = dist;
+                result.clear();
+                result.push_back(entries_[i]);
+            } else if (dist == min_dist) {
+                result.push_back(entries_[i]);
+            }
         }
     }
 
-    return make_pair(itNearest->second, min_dist);
+    return make_pair(result, min_dist);
 }
 

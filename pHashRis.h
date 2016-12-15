@@ -48,7 +48,7 @@ public:
      * The image pairs whose distance is greater than max_distance are not displayed.
      * @param max_distance Maximum distance between displayed image pair.
      */
-    void DisplayDistances(int max_distance = 64) const;
+    void DisplayDistances(const int max_distance = 64) const;
 
 private:
     /**
