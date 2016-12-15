@@ -44,11 +44,18 @@ public:
 
     /**
      * Search for the nearest files in the store.
-     * This function uses a parallel sequential search.
      * @param file_hash The query hash.
      * @return A vector with all the nearest files and the distance to the query file.
      */
     pair<vector<Entry>, int> SearchNearest(const ulong64 file_hash) const;
+
+    /**
+     * Search for the nearest files in the store.
+     * This function uses a parallel sequential search.
+     * @param file_hash The query hash.
+     * @return A vector with all the nearest files and the distance to the query file.
+     */
+    pair<vector<Entry>, int> ParallelSearchNearest(const ulong64 file_hash) const;
 
 private:
     vector<Entry> entries_;

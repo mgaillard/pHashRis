@@ -62,6 +62,26 @@ pair<vector<HashStore::Entry>, int> HashStore::SearchNearest(const ulong64 file_
     vector<HashStore::Entry> result;
     int min_dist = numeric_limits<int>::max();
 
+    for (unsigned int i = 0; i < entries_.size(); i++) {
+        int dist = ph_hamming_distance(file_hash, entries_[i].hash);
+        {
+            if (dist < min_dist) {
+                min_dist = dist;
+                result.clear();
+                result.push_back(entries_[i]);
+            } else if (dist == min_dist) {
+                result.push_back(entries_[i]);
+            }
+        }
+    }
+
+    return make_pair(result, min_dist);
+}
+
+pair<vector<HashStore::Entry>, int> HashStore::ParallelSearchNearest(const ulong64 file_hash) const {
+    vector<HashStore::Entry> result;
+    int min_dist = numeric_limits<int>::max();
+
     #pragma omp parallel for shared(min_dist, result)
     for (unsigned int i = 0; i < entries_.size(); i++) {
         int dist = ph_hamming_distance(file_hash, entries_[i].hash);
@@ -79,4 +99,3 @@ pair<vector<HashStore::Entry>, int> HashStore::SearchNearest(const ulong64 file_
 
     return make_pair(result, min_dist);
 }
-
