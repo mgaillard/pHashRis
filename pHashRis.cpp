@@ -1,8 +1,17 @@
 #include "pHashRis.h"
 #include <iostream>
-#include <vector>
-#include <dirent.h>
-#include <sys/stat.h>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/median.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/extended_p_square.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+#include <algorithm>
+
+using namespace std;
+using namespace boost::accumulators;
 
 const string INDEX_PATH = "index";
 
@@ -64,7 +73,49 @@ void pHashRis::Search(const string& path) const {
     }
 }
 
-void pHashRis::Distances(int max_distance) const {
+void pHashRis::DisplayIndexStatistics() const {
+    boost::array<double, 2> quantile_probs = {0.25, 0.75};
+    accumulator_set<int, stats<tag::min,
+                               tag::median(with_p_square_quantile),
+                               tag::max,
+                               tag::extended_p_square,
+                               tag::mean,
+                               tag::variance> > acc(tag::extended_p_square::probabilities = quantile_probs);
+
+    // Distance can take values from 0 to 64.
+    const int MAX_DISTANCE = 64;
+    array<long long, MAX_DISTANCE+1> histogram;
+    histogram.fill(0);
+
+    for (map<ulong64, string>::const_iterator itFirst = store_.Entries().begin();
+         itFirst != store_.Entries().end(); ++itFirst) {
+        for (map<ulong64, string>::const_iterator itSecond = next(itFirst);
+             itSecond != store_.Entries().end(); ++itSecond) {
+            int dist = ph_hamming_distance(itFirst->first, itSecond->first);
+            // Push distance to the accumulator and histogram.
+            acc(dist);
+            histogram.at(dist)++;
+        }
+    }
+
+    cout << "Min: " << extract_result<tag::min>(acc) << endl
+         << "First quartile: " << extract_result<tag::extended_p_square>(acc)[0] << endl
+         << "Median: " << extract_result<tag::median(with_p_square_quantile)>(acc) << endl
+         << "Last quartile: " << extract_result<tag::extended_p_square>(acc)[1] << endl
+         << "Max: " << extract_result<tag::max>(acc) << endl
+         << endl
+         << "Mean: " << extract_result<tag::mean>(acc) << endl
+         << "Variance: " << extract_result<tag::variance>(acc) << endl
+         << "Standard deviation: " << sqrt(extract_result<tag::variance>(acc)) << endl
+         << endl;
+
+    cout << "Histogram:" << endl;
+    for (int i = 0; i <= MAX_DISTANCE; i++) {
+        cout << i << "\t" << histogram[i] << endl;
+    }
+}
+
+void pHashRis::DisplayDistances(int max_distance) const {
     for (map<ulong64, string>::const_iterator itFirst = store_.Entries().begin();
          itFirst != store_.Entries().end(); ++itFirst) {
         for (map<ulong64, string>::const_iterator itSecond = next(itFirst);
