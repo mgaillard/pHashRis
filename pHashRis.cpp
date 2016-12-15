@@ -89,16 +89,12 @@ void pHashRis::DisplayIndexStatistics() const {
     array<long long, MAX_DISTANCE+1> histogram;
     histogram.fill(0);
 
-    #pragma omp parallel for shared(entries, acc, histogram)
     for (unsigned int i = 0; i < entries.size(); i++) {
         for (unsigned int j = i + 1; j < entries.size(); j++) {
             int dist = ph_hamming_distance(entries[i].hash, entries[j].hash);
             // Push distance to the accumulator and histogram.
-            #pragma omp critical(statistics)
-            {
-                acc(dist);
-                histogram.at(dist)++;
-            }
+            acc(dist);
+            histogram.at(dist)++;
         }
     }
 
