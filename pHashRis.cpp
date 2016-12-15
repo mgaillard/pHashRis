@@ -75,7 +75,7 @@ void pHashRis::Search(const string& path) const {
 
 void pHashRis::DisplayIndexStatistics() const {
     boost::array<double, 2> quantile_probs = {0.25, 0.75};
-    accumulator_set<int, stats<tag::min,
+    accumulator_set<long long, stats<tag::min,
                                tag::median(with_p_square_quantile),
                                tag::max,
                                tag::extended_p_square,
