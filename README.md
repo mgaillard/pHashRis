@@ -17,11 +17,15 @@ pHashRis makes use of pHash in order to extract a perceptual hash of the images.
 Installation
 ----------------
 
-You first need to clone the project on your computer, and build it with the following command.
+You first need to clone the project on your computer, and build it with one of the following commands.
 
 ```bash
 # Build the project with CMake
-$ cmake .
+$ cmake -DCMAKE_BUILD_TYPE=Release .
+$ make
+
+# Build the project with CMake optimised for a SSE4 CPU.
+$ cmake -DCMAKE_BUILD_TYPE=Release -DWITH_NATIVE_ARCH=ON -DWITH_POPCNT=ON .
 $ make
 ```
 The executable is then located in the same directory.
