@@ -5,6 +5,7 @@
 using namespace std;
 
 const string DATABASE = "index";
+const int THRESHOLD = 16;
 
 int main(int argc, char **argv) {
     if (argc < 2 || argc > 3) {
@@ -20,7 +21,7 @@ int main(int argc, char **argv) {
 
     string command(argv[1]);
 
-    pHashRis app(DATABASE);
+    pHashRis app(DATABASE, THRESHOLD);
     app.LoadIndex();
 
     if (command.compare("index") == 0) {

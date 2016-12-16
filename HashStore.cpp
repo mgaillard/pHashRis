@@ -1,8 +1,7 @@
 #include <iostream>
-#include <limits>
 #include <fstream>
 #include "pHash.h"
-
+#include "Hamming.h"
 #include "HashStore.h"
 
 using namespace std;
@@ -58,44 +57,32 @@ void HashStore::Add(ulong64 file_hash, const string &file_path) {
     entries_.push_back(entry);
 }
 
-pair<vector<HashStore::Entry>, int> HashStore::SearchNearest(const ulong64 file_hash) const {
-    vector<HashStore::Entry> result;
-    int min_dist = numeric_limits<int>::max();
+vector<pair<int, HashStore::Entry> > HashStore::Search(const ulong64 file_hash, const int threshold) const {
+    vector<pair<int, HashStore::Entry> > result;
 
     for (unsigned int i = 0; i < entries_.size(); i++) {
-        int dist = ph_hamming_distance(file_hash, entries_[i].hash);
-        {
-            if (dist < min_dist) {
-                min_dist = dist;
-                result.clear();
-                result.push_back(entries_[i]);
-            } else if (dist == min_dist) {
-                result.push_back(entries_[i]);
-            }
+        int dist = hamming_distance(file_hash, entries_[i].hash);
+        if (dist <= threshold) {
+            result.push_back(make_pair(dist, entries_[i]));
         }
     }
 
-    return make_pair(result, min_dist);
+    return result;
 }
 
-pair<vector<HashStore::Entry>, int> HashStore::ParallelSearchNearest(const ulong64 file_hash) const {
-    vector<HashStore::Entry> result;
-    int min_dist = numeric_limits<int>::max();
+vector<pair<int, HashStore::Entry> > HashStore::ParallelSearch(const ulong64 file_hash, const int threshold) const {
+    vector<pair<int, HashStore::Entry> > result;
 
-    #pragma omp parallel for shared(min_dist, result)
+    #pragma omp parallel for shared(result)
     for (unsigned int i = 0; i < entries_.size(); i++) {
-        int dist = ph_hamming_distance(file_hash, entries_[i].hash);
-        #pragma omp critical(search_min)
-        {
-            if (dist < min_dist) {
-                min_dist = dist;
-                result.clear();
-                result.push_back(entries_[i]);
-            } else if (dist == min_dist) {
-                result.push_back(entries_[i]);
+        int dist = hamming_distance(file_hash, entries_[i].hash);
+        if (dist <= threshold) {
+            #pragma omp critical
+            {
+                result.push_back(make_pair(dist, entries_[i]));
             }
         }
     }
 
-    return make_pair(result, min_dist);
+    return result;
 }

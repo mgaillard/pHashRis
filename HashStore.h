@@ -43,19 +43,24 @@ public:
     void Add(ulong64 file_hash, const string &file_path);
 
     /**
-     * Search for the nearest files in the store.
-     * @param file_hash The query hash.
-     * @return A vector with all the nearest files and the distance to the query file.
-     */
-    pair<vector<Entry>, int> SearchNearest(const ulong64 file_hash) const;
-
-    /**
-     * Search for the nearest files in the store.
+     * Search in the store for the files that are nearer to the query than a threshold.
+     * If the distance is equal to the threshold the file is selected.
      * This function uses a parallel sequential search.
      * @param file_hash The query hash.
-     * @return A vector with all the nearest files and the distance to the query file.
+     * @param threshold The maximum distance between the query and the files.
+     * @return A vector with all the entries and their distances to the query in a pair.
      */
-    pair<vector<Entry>, int> ParallelSearchNearest(const ulong64 file_hash) const;
+    vector<pair<int, Entry> > Search(const ulong64 file_hash, const int threshold) const;
+
+    /**
+     * Search in the store for the files that are nearer to the query than a threshold.
+     * If the distance is equal to the threshold the file is selected.
+     * This function uses a parallel sequential search.
+     * @param file_hash The query hash.
+     * @param threshold The maximum distance between the query and the files.
+     * @return A vector with all the entries and their distances to the query in a pair.
+     */
+    vector<pair<int, Entry> > ParallelSearch(const ulong64 file_hash, const int threshold) const;
 
 private:
     vector<Entry> entries_;

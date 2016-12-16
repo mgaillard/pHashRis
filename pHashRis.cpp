@@ -1,4 +1,5 @@
 #include "pHashRis.h"
+#include "Hamming.h"
 #include <iostream>
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -13,9 +14,7 @@
 using namespace std;
 using namespace boost::accumulators;
 
-const string INDEX_PATH = "index";
-
-pHashRis::pHashRis(const string& index_path) : index_path_(index_path) {
+pHashRis::pHashRis(const string &index_path, int threshold) : index_path_(index_path), threshold_(threshold) {
 
 }
 
@@ -91,7 +90,7 @@ void pHashRis::DisplayIndexStatistics() const {
 
     for (unsigned int i = 0; i < entries.size(); i++) {
         for (unsigned int j = i + 1; j < entries.size(); j++) {
-            int dist = ph_hamming_distance(entries[i].hash, entries[j].hash);
+            int dist = hamming_distance(entries[i].hash, entries[j].hash);
             // Push distance to the accumulator and histogram.
             acc(dist);
             histogram.at(dist)++;
@@ -121,9 +120,9 @@ void pHashRis::DisplayDistances(const int max_distance) const {
     #pragma omp parallel for shared(entries)
     for (unsigned int i = 0; i < entries.size(); i++) {
         for (unsigned int j = i + 1; j < entries.size(); j++) {
-            int dist = ph_hamming_distance(entries[i].hash, entries[j].hash);
+            int dist = hamming_distance(entries[i].hash, entries[j].hash);
             if (dist <= max_distance) {
-                #pragma omp critical(output)
+                #pragma omp critical
                 {
                     cout << entries[i].file_path << "\t" << entries[j].file_path << "\t" << dist << endl;
                 }
@@ -168,7 +167,7 @@ void pHashRis::IndexFiles(const vector<string>& files) {
     #pragma omp parallel for private(file_hash)
     for (unsigned int i = 0; i < files.size(); i++) {
         if (ph_dct_imagehash(files[i].c_str(), file_hash) >= 0) {
-            #pragma omp critical(store_update)
+            #pragma omp critical
             {
                 store_.Add(file_hash, files[i]);
             }
@@ -183,17 +182,16 @@ void pHashRis::SearchFiles(const vector<string>& files) const {
     #pragma omp parallel for private(file_hash)
     for (unsigned int i = 0; i < files.size(); i++) {
         if (ph_dct_imagehash(files[i].c_str(), file_hash) >= 0) {
-            pair<vector<HashStore::Entry>, int> result = store_.SearchNearest(file_hash);
+            vector<pair<int, HashStore::Entry> > result = store_.Search(file_hash, threshold_);
 
-            #pragma omp critical(output)
+            #pragma omp critical
             {
                 cout << "Query : " << files[i].c_str() << "\n";
-                cout << "Found " << result.first.size() << " files\n";
-                for (vector<HashStore::Entry>::const_iterator it = result.first.begin();
-                     it != result.first.end(); ++it) {
-                    cout << "\t" << it->file_path << "\n";
+                cout << "Found " << result.size() << " files\n";
+                for (vector<pair<int, HashStore::Entry> >::const_iterator it = result.begin();
+                     it != result.end(); ++it) {
+                    cout << it->first << " : " << it->second.file_path << "\n";
                 }
-                cout << "Distance = " << result.second << "\n";
                 cout << endl;
             }
         } else {

@@ -10,7 +10,7 @@ public:
      * Construct a pHashRis Application.
      * @param index_path Path to the index file.
      */
-    pHashRis(const string &index_path);
+    pHashRis(const string &index_path, int threshold);
 
     virtual ~pHashRis();
 
@@ -74,6 +74,11 @@ private:
      * Path to the index file.
      */
     string index_path_;
+
+    /**
+     * Threshold for the search.
+     */
+    int threshold_;
 
     HashStore store_;
 };
