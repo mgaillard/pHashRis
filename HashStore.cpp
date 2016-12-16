@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include "pHash.h"
 #include "Hamming.h"
 #include "HashStore.h"
@@ -45,6 +46,10 @@ void HashStore::Save(const string &filename) {
     }
 }
 
+void HashStore::Sort() {
+    sort(entries_.begin(), entries_.end());
+}
+
 const vector<HashStore::Entry>& HashStore::Entries() const {
     return entries_;
 }
@@ -67,6 +72,8 @@ vector<pair<int, HashStore::Entry> > HashStore::Search(const ulong64 file_hash, 
         }
     }
 
+    sort(result.begin(), result.end());
+
     return result;
 }
 
@@ -83,6 +90,8 @@ vector<pair<int, HashStore::Entry> > HashStore::ParallelSearch(const ulong64 fil
             }
         }
     }
+
+    sort(result.begin(), result.end());
 
     return result;
 }

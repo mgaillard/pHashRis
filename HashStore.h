@@ -12,6 +12,10 @@ public:
     struct Entry {
         ulong64 hash;
         string file_path;
+
+        bool operator<(const Entry &other) const {
+            return hash < other.hash || (hash == other.hash && file_path.compare(other.file_path) < 0);
+        }
     };
 
     HashStore();
@@ -27,6 +31,11 @@ public:
      * @param filename A path to a file.
      */
     void Save(const string &filename);
+
+    /**
+     * Sort the entries by hash and then by file_path.
+     */
+    void Sort();
 
     /**
      * Return a const vector of all entries in the HashStore.

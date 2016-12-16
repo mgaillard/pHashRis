@@ -20,7 +20,7 @@ public:
     void LoadIndex();
 
     /**
-     * Save the index.
+     * Sort and save the index.
      */
     void SaveIndex();
 

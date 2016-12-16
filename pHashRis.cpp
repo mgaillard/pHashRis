@@ -27,6 +27,7 @@ void pHashRis::LoadIndex() {
 }
 
 void pHashRis::SaveIndex() {
+    store_.Sort();
     store_.Save(index_path_);
 }
 
