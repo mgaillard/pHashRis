@@ -188,7 +188,7 @@ void pHashRis::SearchFiles(const vector<string>& files) const {
             #pragma omp critical
             {
                 cout << "Query : " << files[i].c_str() << "\n";
-                cout << "Found " << result.size() << " files\n";
+                cout << "Files found : " << result.size() << "\n";
                 for (vector<pair<int, HashStore::Entry> >::const_iterator it = result.begin();
                      it != result.end(); ++it) {
                     cout << it->first << " : " << it->second.file_path << "\n";
