@@ -35,6 +35,9 @@ Usage
 
 ### 
 ```bash
+# Display the help
+$ ./pHashRis -h
+
 # Index the content of a directory
 $ ./pHashRis index <dir_path>
 
@@ -42,7 +45,7 @@ $ ./pHashRis index <dir_path>
 $ ./pHashRis statistics
 
 # Display all image pairs whose distance is less than or equal to 16
-$ ./pHashRis distances 16
+$ ./pHashRis distances -t 16
 
 # Search for an image
 $ ./pHashRis search <file_path>

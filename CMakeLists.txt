@@ -17,10 +17,13 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-find_package(Boost REQUIRED)
+set(Boost_USE_STATIC_LIBS        ON) # only find static libs
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
+find_package(Boost COMPONENTS program_options REQUIRED)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
 endif()
@@ -30,4 +33,5 @@ link_directories(${CMAKE_BINARY_DIR})
 
 set(SOURCE_FILES main.cpp HashStore.cpp HashStore.h pHashRis.cpp pHashRis.h Hamming.h Hamming.cpp)
 add_executable(pHashRis ${SOURCE_FILES})
+target_link_libraries(pHashRis ${Boost_LIBRARIES})
 target_link_libraries(pHashRis pHash)
