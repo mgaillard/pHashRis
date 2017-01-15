@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.5)
 project(pHashRis)
 
 option(WITH_NATIVE_ARCH "Compile in 64 bits for the native architecture." OFF)
