@@ -1,12 +1,20 @@
 #include "pHashRis.h"
+#include "Hamming.h"
 #include <iostream>
-#include <vector>
-#include <dirent.h>
-#include <sys/stat.h>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/min.hpp>
+#include <boost/accumulators/statistics/median.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/extended_p_square.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+#include <algorithm>
 
-const string INDEX_PATH = "index";
+using namespace std;
+using namespace boost::accumulators;
 
-pHashRis::pHashRis(const string& index_path) : index_path_(index_path) {
+pHashRis::pHashRis(const string &index_path, int threshold) : index_path_(index_path), threshold_(threshold) {
 
 }
 
@@ -19,6 +27,7 @@ void pHashRis::LoadIndex() {
 }
 
 void pHashRis::SaveIndex() {
+    store_.Sort();
     store_.Save(index_path_);
 }
 
@@ -64,6 +73,64 @@ void pHashRis::Search(const string& path) const {
     }
 }
 
+void pHashRis::DisplayIndexStatistics() const {
+    const vector<HashStore::Entry>& entries = store_.Entries();
+
+    boost::array<double, 2> quantile_probs = {0.25, 0.75};
+    accumulator_set<long long, stats<tag::min,
+                               tag::median(with_p_square_quantile),
+                               tag::max,
+                               tag::extended_p_square,
+                               tag::mean,
+                               tag::variance> > acc(tag::extended_p_square::probabilities = quantile_probs);
+
+    // Distance can take values from 0 to 64.
+    const int MAX_DISTANCE = 64;
+    array<long long, MAX_DISTANCE+1> histogram;
+    histogram.fill(0);
+
+    for (unsigned int i = 0; i < entries.size(); i++) {
+        for (unsigned int j = i + 1; j < entries.size(); j++) {
+            int dist = hamming_distance(entries[i].hash, entries[j].hash);
+            // Push distance to the accumulator and histogram.
+            acc(dist);
+            histogram.at(dist)++;
+        }
+    }
+
+    cout << "Min: " << extract_result<tag::min>(acc) << endl
+         << "First quartile: " << extract_result<tag::extended_p_square>(acc)[0] << endl
+         << "Median: " << extract_result<tag::median(with_p_square_quantile)>(acc) << endl
+         << "Last quartile: " << extract_result<tag::extended_p_square>(acc)[1] << endl
+         << "Max: " << extract_result<tag::max>(acc) << endl
+         << endl
+         << "Mean: " << extract_result<tag::mean>(acc) << endl
+         << "Variance: " << extract_result<tag::variance>(acc) << endl
+         << "Standard deviation: " << sqrt(extract_result<tag::variance>(acc)) << endl
+         << endl;
+
+    cout << "Histogram:" << endl;
+    for (int i = 0; i <= MAX_DISTANCE; i++) {
+        cout << i << "\t" << histogram[i] << endl;
+    }
+}
+
+void pHashRis::DisplayDistances(const int max_distance) const {
+    const vector<HashStore::Entry>& entries = store_.Entries();
+
+    #pragma omp parallel for shared(entries)
+    for (unsigned int i = 0; i < entries.size(); i++) {
+        for (unsigned int j = i + 1; j < entries.size(); j++) {
+            int dist = hamming_distance(entries[i].hash, entries[j].hash);
+            if (dist <= max_distance) {
+                #pragma omp critical
+                {
+                    cout << entries[i].file_path << "\t" << entries[j].file_path << "\t" << dist << endl;
+                }
+            }
+        }
+    }
+}
 
 vector<string> pHashRis::ListImages(const string &dir_path) const {
     vector<string> files;
@@ -101,7 +168,7 @@ void pHashRis::IndexFiles(const vector<string>& files) {
     #pragma omp parallel for private(file_hash)
     for (unsigned int i = 0; i < files.size(); i++) {
         if (ph_dct_imagehash(files[i].c_str(), file_hash) >= 0) {
-            #pragma omp critical(store_update)
+            #pragma omp critical
             {
                 store_.Add(file_hash, files[i]);
             }
@@ -116,13 +183,17 @@ void pHashRis::SearchFiles(const vector<string>& files) const {
     #pragma omp parallel for private(file_hash)
     for (unsigned int i = 0; i < files.size(); i++) {
         if (ph_dct_imagehash(files[i].c_str(), file_hash) >= 0) {
-            pair<string, int> result = store_.SearchNearest(file_hash);
-            #pragma omp critical(output)
+            vector<pair<int, HashStore::Entry> > result = store_.Search(file_hash, threshold_);
+
+            #pragma omp critical
             {
-                cout << "Query : " << files[i].c_str() << endl
-                     << "Found : " << result.first << endl
-                     << "distance = " << result.second << endl
-                     << endl;
+                cout << "Query : " << files[i].c_str() << "\n";
+                cout << "Files found : " << result.size() << "\n";
+                for (vector<pair<int, HashStore::Entry> >::const_iterator it = result.begin();
+                     it != result.end(); ++it) {
+                    cout << it->first << " : " << it->second.file_path << "\n";
+                }
+                cout << endl;
             }
         } else {
             cout << "Error while calculating the hash of the file " << files[i] << "." << endl;

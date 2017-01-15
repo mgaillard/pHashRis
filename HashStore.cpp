@@ -1,8 +1,8 @@
 #include <iostream>
-#include <iterator>
 #include <fstream>
+#include <algorithm>
 #include "pHash.h"
-
+#include "Hamming.h"
 #include "HashStore.h"
 
 using namespace std;
@@ -35,40 +35,63 @@ void HashStore::Save(const string &filename) {
     ofstream file(filename, ios::out | ios::trunc);
 
     if (file) {
-        map<ulong64, string>::const_iterator itEntry;
-        for (itEntry = _entries.begin(); itEntry != _entries.end(); ++itEntry) {
-            file << itEntry->first << " " << itEntry->second << endl;
+        vector<HashStore::Entry>::const_iterator itEntry;
+        for (itEntry = entries_.begin(); itEntry != entries_.end(); ++itEntry) {
+            file << itEntry->hash << " " << itEntry->file_path << endl;
         }
 
         file.close();
     } else {
         cout << "Impossible to save the index file." << endl;
     }
-
 }
 
-bool HashStore::Add(ulong64 file_hash, const string &file_path) {
-    pair<map<ulong64, string>::const_iterator, bool> result;
-
-    result = _entries.insert(make_pair(file_hash, file_path));
-
-    return result.second;
+void HashStore::Sort() {
+    sort(entries_.begin(), entries_.end());
 }
 
-pair<string, int> HashStore::SearchNearest(ulong64 file_hash) const {
-    map<ulong64, string>::const_iterator itNearest = _entries.begin();
-    int min_dist = ph_hamming_distance(file_hash, itNearest->first);
+const vector<HashStore::Entry>& HashStore::Entries() const {
+    return entries_;
+}
 
-    map<ulong64, string>::const_iterator itEntry;
-    for (itEntry = next(_entries.begin()); itEntry != _entries.end(); ++itEntry) {
-        int dist = ph_hamming_distance(file_hash, itEntry->first);
+void HashStore::Add(ulong64 file_hash, const string &file_path) {
+    HashStore::Entry entry;
+    entry.hash = file_hash;
+    entry.file_path = file_path;
 
-        if (dist < min_dist) {
-            min_dist = dist;
-            itNearest = itEntry;
+    entries_.push_back(entry);
+}
+
+vector<pair<int, HashStore::Entry> > HashStore::Search(const ulong64 file_hash, const int threshold) const {
+    vector<pair<int, HashStore::Entry> > result;
+
+    for (unsigned int i = 0; i < entries_.size(); i++) {
+        int dist = hamming_distance(file_hash, entries_[i].hash);
+        if (dist <= threshold) {
+            result.push_back(make_pair(dist, entries_[i]));
         }
     }
 
-    return make_pair(itNearest->second, min_dist);
+    sort(result.begin(), result.end());
+
+    return result;
 }
 
+vector<pair<int, HashStore::Entry> > HashStore::ParallelSearch(const ulong64 file_hash, const int threshold) const {
+    vector<pair<int, HashStore::Entry> > result;
+
+    #pragma omp parallel for shared(result)
+    for (unsigned int i = 0; i < entries_.size(); i++) {
+        int dist = hamming_distance(file_hash, entries_[i].hash);
+        if (dist <= threshold) {
+            #pragma omp critical
+            {
+                result.push_back(make_pair(dist, entries_[i]));
+            }
+        }
+    }
+
+    sort(result.begin(), result.end());
+
+    return result;
+}

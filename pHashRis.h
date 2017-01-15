@@ -10,7 +10,7 @@ public:
      * Construct a pHashRis Application.
      * @param index_path Path to the index file.
      */
-    pHashRis(const string &index_path);
+    pHashRis(const string &index_path, int threshold);
 
     virtual ~pHashRis();
 
@@ -20,7 +20,7 @@ public:
     void LoadIndex();
 
     /**
-     * Save the index.
+     * Sort and save the index.
      */
     void SaveIndex();
 
@@ -37,6 +37,18 @@ public:
      * @param path A path to an image or a directory.
      */
     void Search(const string& path) const;
+
+    /**
+     * Display statistical information about the distances between the indexed images.
+     */
+    void DisplayIndexStatistics() const;
+
+    /**
+     * Display the distance between the indexed images.
+     * The image pairs whose distance is greater than max_distance are not displayed.
+     * @param max_distance Maximum distance between displayed image pair.
+     */
+    void DisplayDistances(const int max_distance = 64) const;
 
 private:
     /**
@@ -62,6 +74,11 @@ private:
      * Path to the index file.
      */
     string index_path_;
+
+    /**
+     * Threshold for the search.
+     */
+    int threshold_;
 
     HashStore store_;
 };

@@ -2,13 +2,22 @@
 #define PHASHRIS_HASHSTORE_H
 
 #include <string>
-#include <map>
+#include <vector>
 #include "pHash.h"
 
 using namespace std;
 
 class HashStore {
 public:
+    struct Entry {
+        ulong64 hash;
+        string file_path;
+
+        bool operator<(const Entry &other) const {
+            return hash < other.hash || (hash == other.hash && file_path.compare(other.file_path) < 0);
+        }
+    };
+
     HashStore();
 
     /**
@@ -24,23 +33,46 @@ public:
     void Save(const string &filename);
 
     /**
+     * Sort the entries by hash and then by file_path.
+     */
+    void Sort();
+
+    /**
+     * Return a const vector of all entries in the HashStore.
+     * @return A const vector of all entries in the HashStore.
+     */
+    const vector<Entry>& Entries() const;
+
+    /**
      * Add a file to the store.
      * @param file_hash The file hash.
      * @param file_path The file path.
      * @return True if the file has been added, false otherwise.
      */
-    bool Add(ulong64 file_hash, const string &file_path);
+    void Add(ulong64 file_hash, const string &file_path);
 
     /**
-     * Search for the nearest file in the store.
-     * This function is thread-safe.
+     * Search in the store for the files that are nearer to the query than a threshold.
+     * If the distance is equal to the threshold the file is selected.
+     * This function uses a parallel sequential search.
      * @param file_hash The query hash.
-     * @return A pair with the path to the nearest file and the distance to the query file.
+     * @param threshold The maximum distance between the query and the files.
+     * @return A vector with all the entries and their distances to the query in a pair.
      */
-    pair<string, int> SearchNearest(ulong64 file_hash) const;
+    vector<pair<int, Entry> > Search(const ulong64 file_hash, const int threshold) const;
+
+    /**
+     * Search in the store for the files that are nearer to the query than a threshold.
+     * If the distance is equal to the threshold the file is selected.
+     * This function uses a parallel sequential search.
+     * @param file_hash The query hash.
+     * @param threshold The maximum distance between the query and the files.
+     * @return A vector with all the entries and their distances to the query in a pair.
+     */
+    vector<pair<int, Entry> > ParallelSearch(const ulong64 file_hash, const int threshold) const;
 
 private:
-    map<ulong64, string> _entries;
+    vector<Entry> entries_;
 };
 
 #endif //PHASHRIS_HASHSTORE_H
