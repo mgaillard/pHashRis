@@ -44,8 +44,8 @@ $ ./pHashRis index <dir_path>
 # Display statistics about the indexed images
 $ ./pHashRis statistics
 
-# Display all image pairs whose distance is less than or equal to 16
-$ ./pHashRis distances -t 16
+# Display all image pairs whose distance is less than or equal to 0.16
+$ ./pHashRis distances -t 0.16
 
 # Search for an image
 $ ./pHashRis search <file_path>
