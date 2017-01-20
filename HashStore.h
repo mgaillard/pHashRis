@@ -12,7 +12,7 @@ using namespace std;
 
 //------------------------------------------------------------------ Definition
 
-template<typename H, double (*HashDistance)(H, H)>
+template<typename H, double (*HashDistance)(const H&, const H&)>
 class HashStore {
 public:
     typedef H Hash;
@@ -22,7 +22,8 @@ public:
         string file_path;
 
         bool operator<(const Entry &other) const {
-            return hash < other.hash || (hash == other.hash && file_path.compare(other.file_path) < 0);
+            //return hash < other.hash || (hash == other.hash && file_path.compare(other.file_path) < 0);
+            return (file_path.compare(other.file_path) < 0);
         }
     };
 
@@ -97,7 +98,7 @@ private:
 };
 
 //-------------------------------------------------------------- Implementation
-template<typename H, double (*HashDistance)(H, H)>
+template<typename H, double (*HashDistance)(const H&, const H&)>
 void HashStore<H, HashDistance>::Load(const string &filename) {
     ifstream file(filename, ios::in);
 
@@ -118,7 +119,7 @@ void HashStore<H, HashDistance>::Load(const string &filename) {
     }
 }
 
-template<typename H, double (*HashDistance)(H, H)>
+template<typename H, double (*HashDistance)(const H&, const H&)>
 void HashStore<H, HashDistance>::Save(const string &filename) {
     ofstream file(filename, ios::out | ios::trunc);
 

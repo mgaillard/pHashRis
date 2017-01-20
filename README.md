@@ -52,6 +52,12 @@ $ ./pHashRis search <file_path>
 
 # Search for all the images in a directory
 $ ./pHashRis search <directory_path>
+
+# Index the content of a directory using a MH based hash
+$ ./pHashRis -f MH index <directory_path>
+
+# Search for all the images in a directory using a MH based hash
+$ ./pHashRis -f MH search <directory_path>
 ```
 
 License

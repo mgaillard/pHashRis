@@ -14,13 +14,14 @@
 #include <boost/accumulators/statistics/extended_p_square.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
+#include "Ris.h"
 #include "HashStore.h"
 
 using namespace std;
 using namespace boost::accumulators;
 
-template<typename H, double (*HashDistance)(H, H), H (*HashFunction)(const string&)>
-class pHashRis {
+template<typename H, double (*HashDistance)(const H&, const H&), H (*HashFunction)(const string&)>
+class pHashRis : public Ris {
 public:
     typedef H Hash;
     typedef typename HashStore<Hash, HashDistance>::Entry HashEntry;
@@ -39,14 +40,14 @@ public:
     /**
      * Load the index.
      */
-    void LoadIndex() {
+    void LoadIndex() override {
         store_.Load(index_path_);
     }
 
     /**
      * Sort and save the index.
      */
-    void SaveIndex() {
+    void SaveIndex() override {
         store_.Sort();
         store_.Save(index_path_);
     }
@@ -56,7 +57,7 @@ public:
      * If the given path is a directory, index all images in it.
      * @param path A path to an image or a directory.
      */
-    void Index(const string& path) {
+    void Index(const string& path) override {
         vector<string> files;
 
         struct stat info;
@@ -83,7 +84,7 @@ public:
      * If the given path is a directory, search for all images in it.
      * @param path A path to an image or a directory.
      */
-    void Search(const string& path) const {
+    void Search(const string& path) const override {
         vector<string> files;
 
         struct stat info;
@@ -106,7 +107,7 @@ public:
     /**
      * Display statistical information about the distances between the indexed images.
      */
-    void DisplayIndexStatistics() const {
+    void DisplayIndexStatistics() const override {
         const vector<HashEntry>& entries = store_.Entries();
 
         boost::array<double, 2> quantile_probs = {0.25, 0.75};
@@ -142,7 +143,7 @@ public:
      * The image pairs whose distance is greater than max_distance are not displayed.
      * @param max_distance Maximum distance between displayed image pair.
      */
-    void DisplayDistances(const double max_distance = 1.0) const  {
+    void DisplayDistances(const double max_distance = 1.0) const override {
         const vector<HashEntry>& entries = store_.Entries();
 
         #pragma omp parallel for shared(entries)
