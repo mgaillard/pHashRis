@@ -8,9 +8,7 @@ using namespace std;
 DCTpHash DCTpHashFunction(const string &file_path) {
     ulong64 file_hash;
 
-    if (ph_dct_imagehash(file_path.c_str(), file_hash) >= 0) {
-
-    } else {
+    if (ph_dct_imagehash(file_path.c_str(), file_hash) < 0) {
         cerr << "Error while calculating the hash of the file " << file_path << "." << endl;
     }
 

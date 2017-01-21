@@ -4,6 +4,7 @@
 #include "pHashRis.h"
 #include "DCTpHash.h"
 #include "MHpHash.h"
+#include "RVpHash.h"
 
 using namespace std;
 namespace po = boost::program_options;
@@ -30,7 +31,8 @@ int main(int argc, const char *argv[]) {
                 ("database,d", po::value<string>(&database)->default_value(DEFAULT_DATABASE), "Set database file path")
                 ("hashtype,f", po::value<string>(&hash_type)->default_value(DEFAULT_HASHTYPE), "Set the perceptual image hash type:\n"
                         "DCT: \tDiscrete Cosine Transform based hash (default)\n"
-                        "MH: \tMarr-Hildreth Operator based hash")
+                        "MH: \tMarr-Hildreth Operator based hash\n"
+                        "RV: \tRadial Variance based hash")
                 ("threshold,t", po::value<double>(&threshold)->default_value(DEFAULT_THRESHOLD), "Set distance threshold for search");
 
         po::positional_options_description pos_options_desc;
@@ -57,6 +59,8 @@ int main(int argc, const char *argv[]) {
 
             if (hash_type.compare("MH") == 0) {
                 app  = new pHashRis<MHpHash, MHpHashDistance, MHpHashFunction>(database, threshold);
+            } else if (hash_type.compare("RV") == 0) {
+                app  = new pHashRis<RVpHash, RVpHashDistance, RVpHashFunction>(database, threshold);
             } else {
                 app  = new pHashRis<DCTpHash, DCTpHashDistance, DCTpHashFunction>(database, threshold);
             }
