@@ -44,14 +44,20 @@ $ ./pHashRis index <dir_path>
 # Display statistics about the indexed images
 $ ./pHashRis statistics
 
-# Display all image pairs whose distance is less than or equal to 16
-$ ./pHashRis distances -t 16
+# Display all image pairs whose distance is less than or equal to 0.16
+$ ./pHashRis distances -t 0.16
 
 # Search for an image
 $ ./pHashRis search <file_path>
 
 # Search for all the images in a directory
 $ ./pHashRis search <directory_path>
+
+# Index the content of a directory using a MH based hash
+$ ./pHashRis -f MH index <directory_path>
+
+# Search for all the images in a directory using a MH based hash
+$ ./pHashRis -f MH search <directory_path>
 ```
 
 License

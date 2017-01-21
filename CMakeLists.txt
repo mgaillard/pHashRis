@@ -31,7 +31,7 @@ endif()
 set(PHASH_LIB_DIR /usr/local/lib)
 link_directories(${CMAKE_BINARY_DIR})
 
-set(SOURCE_FILES main.cpp HashStore.cpp HashStore.h pHashRis.cpp pHashRis.h Hamming.h Hamming.cpp)
+set(SOURCE_FILES main.cpp HashStore.h pHashRis.h Hamming.h Hamming.cpp DCTpHash.h DCTpHash.cpp MHpHash.h MHpHash.cpp Ris.h RVpHash.h RVpHash.cpp)
 add_executable(pHashRis ${SOURCE_FILES})
 target_link_libraries(pHashRis ${Boost_LIBRARIES})
 target_link_libraries(pHashRis pHash)

@@ -1,17 +1,23 @@
 #include <iostream>
 #include <boost/program_options.hpp>
+#include "Ris.h"
 #include "pHashRis.h"
+#include "DCTpHash.h"
+#include "MHpHash.h"
+#include "RVpHash.h"
 
 using namespace std;
 namespace po = boost::program_options;
 
 const string DEFAULT_DATABASE = "index";
-const int DEFAULT_THRESHOLD = 16;
+const string DEFAULT_HASHTYPE = "DCT";
+const double DEFAULT_THRESHOLD = 0.125;
 
 int main(int argc, const char *argv[]) {
     try {
-        int threshold;
+        double threshold;
         string database;
+        string hash_type;
         // Declare the supported command line options.
         po::options_description options_desc("./pHashRis [options] <command> <path>\nAllowed options:");
         options_desc.add_options()
@@ -23,7 +29,11 @@ int main(int argc, const char *argv[]) {
                         "distances: \tDisplay the pair of image whose distance is less than the threshold\n")
                 ("path,p", po::value<string>(), "Set the path to the dir or file to process. This option is required for the index and search command.")
                 ("database,d", po::value<string>(&database)->default_value(DEFAULT_DATABASE), "Set database file path")
-                ("threshold,t", po::value<int>(&threshold)->default_value(DEFAULT_THRESHOLD), "Set distance threshold for search");
+                ("hashtype,f", po::value<string>(&hash_type)->default_value(DEFAULT_HASHTYPE), "Set the perceptual image hash type:\n"
+                        "DCT: \tDiscrete Cosine Transform based hash (default)\n"
+                        "MH: \tMarr-Hildreth Operator based hash\n"
+                        "RV: \tRadial Variance based hash")
+                ("threshold,t", po::value<double>(&threshold)->default_value(DEFAULT_THRESHOLD), "Set distance threshold for search");
 
         po::positional_options_description pos_options_desc;
         pos_options_desc.add("command", 1);
@@ -37,7 +47,7 @@ int main(int argc, const char *argv[]) {
 
         if (argc == 1 or vm.count("help")) {
             cout << options_desc << endl;
-            return EXIT_FAILURE;
+            return EXIT_SUCCESS;
         }
 
         po::notify(vm);
@@ -45,34 +55,45 @@ int main(int argc, const char *argv[]) {
         if (vm.count("command")) {
             const string& command = vm["command"].as<string>();
 
-            pHashRis app(database, threshold);
-            app.LoadIndex();
+            Ris* app;
+
+            if (hash_type.compare("MH") == 0) {
+                app  = new pHashRis<MHpHash, MHpHashDistance, MHpHashFunction>(database, threshold);
+            } else if (hash_type.compare("RV") == 0) {
+                app  = new pHashRis<RVpHash, RVpHashDistance, RVpHashFunction>(database, threshold);
+            } else {
+                app  = new pHashRis<DCTpHash, DCTpHashDistance, DCTpHashFunction>(database, threshold);
+            }
+
+            app->LoadIndex();
 
             if (command.compare("index") == 0) {
-                if (!vm.count("path")) {
-                    cout << "error: the --path option is required for the index command." << endl;
-                    return EXIT_FAILURE;
+                if (vm.count("path")) {
+                    app->Index(vm["path"].as<string>());
+                    app->SaveIndex();
+                } else {
+                    cerr << "Error: the --path option is required for the index command." << endl;
                 }
-                app.Index(vm["path"].as<string>());
-                app.SaveIndex();
             } else if (command.compare("search") == 0) {
-                if (!vm.count("path")) {
-                    cout << "error: the --path option is required for the search command." << endl;
-                    return EXIT_FAILURE;
+                if (vm.count("path")) {
+                    app->Search(vm["path"].as<string>());
+                } else {
+                    cerr << "Error: the --path option is required for the search command." << endl;
                 }
-                app.Search(vm["path"].as<string>());
             } else if (command.compare("statistics") == 0) {
-                app.DisplayIndexStatistics();
+                app->DisplayIndexStatistics();
             } else if (command.compare("distances") == 0) {
-                int max_distance = threshold;
-                app.DisplayDistances(max_distance);
+                double max_distance = threshold;
+                app->DisplayDistances(max_distance);
             } else {
-                cout << "Unknown command. For more information, see the documentation." << endl;
+                cerr << "Error: unknown command. For more information, see the documentation." << endl;
             }
+
+            delete app;
         }
     }
     catch (exception &e) {
-        cerr << "error: " << e.what() << "\n";
+        cerr << "Error: " << e.what() << "\n";
         return 1;
     }
 
