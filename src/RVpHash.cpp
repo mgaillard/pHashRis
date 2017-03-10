@@ -1,5 +1,5 @@
 #include <iostream>
-#include "pHash.h"
+#include <pHash.h>
 #include "RVpHash.h"
 
 using namespace std;

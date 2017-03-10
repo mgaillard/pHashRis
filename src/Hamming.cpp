@@ -1,5 +1,5 @@
-#include "Hamming.h"
 #include <pHash.h>
+#include "Hamming.h"
 
 int hamming_distance(unsigned long long x, unsigned long long y) {
 #ifdef POPCNT

@@ -2,6 +2,7 @@
 #define PHASHRIS_RVPHASH_H
 
 #include <bitset>
+#include <string>
 
 using namespace std;
 
