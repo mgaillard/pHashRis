@@ -21,24 +21,25 @@ You first need to clone the project on your computer, and build it with one of t
 
 ```bash
 # Build the project with CMake
-$ cmake -DCMAKE_BUILD_TYPE=Release .
+$ mkdir build && cd build
+$ cmake -DCMAKE_BUILD_TYPE=Release ../src
 $ make
 
 # Build the project with CMake optimised for a SSE4 CPU.
-$ cmake -DCMAKE_BUILD_TYPE=Release -DWITH_NATIVE_ARCH=ON -DWITH_POPCNT=ON .
+$ mkdir build && cd build
+$ cmake -DCMAKE_BUILD_TYPE=Release -DWITH_NATIVE_ARCH=ON -DWITH_POPCNT=ON ../src
 $ make
 ```
-The executable is then located in the same directory.
+The executable is then located in the build directory.
 
 Usage
 -----
 
-### 
 ```bash
 # Display the help
 $ ./pHashRis -h
 
-# Index the content of a directory
+# Index the content of a directory (by default using a DCT based hash)
 $ ./pHashRis index <dir_path>
 
 # Display statistics about the indexed images
@@ -58,6 +59,16 @@ $ ./pHashRis -f MH index <directory_path>
 
 # Search for all the images in a directory using a MH based hash
 $ ./pHashRis -f MH search <directory_path>
+```
+
+Benchmark
+---------
+A benchmark is implemented along with pHashRis in order to measure the effectiveness of the different perceptual hash functions. The benchmark runs on Ubuntu 16.04 LTS.
+
+```bash
+# Run the benchmark
+$ cd benchmark
+$ bash run.sh
 ```
 
 License

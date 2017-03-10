@@ -10,8 +10,6 @@
 
 using namespace std;
 
-//------------------------------------------------------------------ Definition
-
 template<typename H, double (*HashDistance)(const H&, const H&)>
 class HashStore {
 public:
@@ -22,7 +20,6 @@ public:
         string file_path;
 
         bool operator<(const Entry &other) const {
-            //return hash < other.hash || (hash == other.hash && file_path.compare(other.file_path) < 0);
             return (file_path.compare(other.file_path) < 0);
         }
     };

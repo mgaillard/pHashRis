@@ -1,0 +1,14 @@
+#!/usr/bin/gnuplot
+reset
+set terminal pngcairo size 1280,720 enhanced
+
+set title 'ROC for DCT, MH, RV based hash'
+set xlabel 'Precision'
+set ylabel 'Recall'
+
+set xrange [0:1]
+set yrange [0:1]
+
+plot 'result_DCT.dat' using 2:3 with linespoints title 'DCT', \
+     'result_MH.dat'  using 2:3 with linespoints title 'MH',  \
+     'result_RV.dat'  using 2:3 with linespoints title 'RV'
