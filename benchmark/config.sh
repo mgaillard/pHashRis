@@ -21,9 +21,24 @@ end_threshold["RV"]=0.17
 benchmark_dir="benchmark"
 benchmark_base_dir="base"
 benchmark_non_indexed_dir="non-indexed"
-benchmark_blur_dir="blur"
-benchmark_gray_dir="gray"
-benchmark_half_dir="half"
-benchmark_compress10_dir="compress10"
-benchmark_rotate5_dir="rotate5"
-benchmark_crop10_dir="crop10"
+
+declare -a functions=("DCT" "MH" "RV")
+declare -a transformations=("blur" "gray" "half" "compress10" "rotate5" "crop10")
+
+declare -A transformation_name
+transformation_name["blur"]="Blur"
+transformation_name["gray"]="Grayscale"
+transformation_name["half"]="Half size"
+transformation_name["compress10"]="Compress with quality 10"
+transformation_name["rotate5"]="Rotation with angle 5"
+transformation_name["crop10"]="Crop right 10%"
+
+declare -A transformation_command
+transformation_command["blur"]="mogrify -path blur -blur 4x2 $benchmark_base_dir/*"
+transformation_command["gray"]="mogrify -path gray -type Grayscale $benchmark_base_dir/*"
+transformation_command["half"]="mogrify -path half -resize 50% $benchmark_base_dir/*"
+transformation_command["compress10"]="mogrify -path compress10 -format jpg -quality 10 $benchmark_base_dir/*"
+transformation_command["rotate5"]="mogrify -path rotate5 -rotate 5 $benchmark_base_dir/*"
+transformation_command["crop10"]="mogrify -path crop10 -crop 90%x100%+0+0 $benchmark_base_dir/*"
+
+relevant_items=$((${#transformations[@]} + 1))
