@@ -147,7 +147,11 @@ void ComputeQueryStatistics(const QueryResult& query, unsigned long relevant_ite
         recall = 1.0;
     }
 
-    f1measure = 2*precision*recall/(precision + recall);
+    if (precision + recall > 0) {
+        f1measure = 2 * precision * recall / (precision + recall);
+    } else {
+        f1measure = 0;
+    }
 
     statistics.total_precision += precision;
     statistics.total_recall += recall;
