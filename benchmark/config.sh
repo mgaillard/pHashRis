@@ -22,7 +22,9 @@ benchmark_dir="benchmark"
 benchmark_base_dir="base"
 benchmark_non_indexed_dir="non-indexed"
 
+# Possible values: "DCT" "MH" "RV"
 declare -a functions=("DCT" "MH" "RV")
+# Possible values: "blur" "gray" "half" "compress10" "rotate5" "crop10"
 declare -a transformations=("blur" "gray" "half" "compress10" "rotate5" "crop10")
 
 declare -A transformation_name
