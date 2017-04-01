@@ -31,7 +31,6 @@ for function in ${functions[@]}; do
     gnuplot -e "filename='result_${function}_base.dat';name='${function} (base)'" "../threshold.pg" > "threshold_${function}_base.png"
     # Transformations
     for t in ${transformations[@]}; do
-        ./"$ris_app" -f "$function" search "$t" -t ${end_threshold[$function]} > "search_${function}_$t"
         (
             ./"$ris_app" -f "$function" search "$t" -t ${end_threshold[$function]}
         ) | ../RisBenchmarkResult --relevant_items 1 --start_threshold ${start_threshold[$function]} --step_threshold ${step_threshold[$function]} --end_threshold ${end_threshold[$function]} > "result_${function}_$t.dat"
