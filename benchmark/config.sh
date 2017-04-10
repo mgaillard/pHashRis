@@ -27,7 +27,7 @@ benchmark_non_indexed_dir="non-indexed"
 declare -a functions=("DCT" "MH" "RV")
 
 # Modifications to apply on images
-# Possible values: "blur" "gray" "half" "compress0" "compress5" "compress10" "compress20" "compress40" "rotate1" "rotate2" "rotate3" "rotate4" "rotate5" "crop4" "crop8" "crop10" "crop12" "crop16" "crop20"
+# Possible values: "blur" "gray" "half" "compress1" "compress5" "compress10" "compress20" "compress40" "compress80" "rotate1" "rotate2" "rotate3" "rotate4" "rotate5" "crop4" "crop8" "crop10" "crop12" "crop16" "crop20"
 declare -a transformations=("blur" "gray" "half" "compress10" "rotate5" "crop10")
 
 # Set to "true" to perform a benchmark on individual transformations
@@ -40,11 +40,12 @@ declare -A transformation_name
 transformation_name["blur"]="Blur"
 transformation_name["gray"]="Grayscale"
 transformation_name["half"]="Half size"
-transformation_name["compress0"]="Compress with quality 0"
+transformation_name["compress1"]="Compress with quality 1"
 transformation_name["compress5"]="Compress with quality 5"
 transformation_name["compress10"]="Compress with quality 10"
 transformation_name["compress20"]="Compress with quality 20"
 transformation_name["compress40"]="Compress with quality 40"
+transformation_name["compress80"]="Compress with quality 80"
 transformation_name["rotate1"]="Rotation with angle 1"
 transformation_name["rotate2"]="Rotation with angle 2"
 transformation_name["rotate3"]="Rotation with angle 3"
@@ -61,11 +62,12 @@ declare -A transformation_command
 transformation_command["blur"]="mogrify -path blur -blur 4x2 $benchmark_base_dir/*"
 transformation_command["gray"]="mogrify -path gray -type Grayscale $benchmark_base_dir/*"
 transformation_command["half"]="mogrify -path half -resize 50% $benchmark_base_dir/*"
-transformation_command["compress0"]="mogrify -path compress10 -format jpg -quality 0 $benchmark_base_dir/*"
-transformation_command["compress5"]="mogrify -path compress10 -format jpg -quality 5 $benchmark_base_dir/*"
+transformation_command["compress1"]="mogrify -path compress1 -format jpg -quality 1 $benchmark_base_dir/*"
+transformation_command["compress5"]="mogrify -path compress5 -format jpg -quality 5 $benchmark_base_dir/*"
 transformation_command["compress10"]="mogrify -path compress10 -format jpg -quality 10 $benchmark_base_dir/*"
-transformation_command["compress20"]="mogrify -path compress10 -format jpg -quality 20 $benchmark_base_dir/*"
-transformation_command["compress40"]="mogrify -path compress10 -format jpg -quality 40 $benchmark_base_dir/*"
+transformation_command["compress20"]="mogrify -path compress20 -format jpg -quality 20 $benchmark_base_dir/*"
+transformation_command["compress40"]="mogrify -path compress40 -format jpg -quality 40 $benchmark_base_dir/*"
+transformation_command["compress80"]="mogrify -path compress80 -format jpg -quality 80 $benchmark_base_dir/*"
 transformation_command["rotate1"]="mogrify -path rotate1 -rotate 1 $benchmark_base_dir/*"
 transformation_command["rotate2"]="mogrify -path rotate2 -rotate 2 $benchmark_base_dir/*"
 transformation_command["rotate3"]="mogrify -path rotate3 -rotate 3 $benchmark_base_dir/*"
