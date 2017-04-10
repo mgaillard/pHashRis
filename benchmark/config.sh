@@ -27,7 +27,7 @@ benchmark_non_indexed_dir="non-indexed"
 declare -a functions=("DCT" "MH" "RV")
 
 # Modifications to apply on images
-# Possible values: "blur" "gray" "half" "compress10" "rotate1" "rotate2" "rotate3" "rotate4" "rotate5" "crop10"
+# Possible values: "blur" "gray" "half" "compress10" "rotate1" "rotate2" "rotate3" "rotate4" "rotate5" "crop4" "crop8" "crop10" "crop12" "crop16" "crop20"
 declare -a transformations=("blur" "gray" "half" "compress10" "rotate5" "crop10")
 
 # Set to "true" to perform a benchmark on individual transformations
@@ -46,7 +46,12 @@ transformation_name["rotate2"]="Rotation with angle 2"
 transformation_name["rotate3"]="Rotation with angle 3"
 transformation_name["rotate4"]="Rotation with angle 4"
 transformation_name["rotate5"]="Rotation with angle 5"
+transformation_name["crop4"]="Crop right 4%"
+transformation_name["crop8"]="Crop right 8%"
 transformation_name["crop10"]="Crop right 10%"
+transformation_name["crop12"]="Crop right 12%"
+transformation_name["crop16"]="Crop right 16%"
+transformation_name["crop20"]="Crop right 20%"
 
 declare -A transformation_command
 transformation_command["blur"]="mogrify -path blur -blur 4x2 $benchmark_base_dir/*"
@@ -58,6 +63,11 @@ transformation_command["rotate2"]="mogrify -path rotate2 -rotate 2 $benchmark_ba
 transformation_command["rotate3"]="mogrify -path rotate3 -rotate 3 $benchmark_base_dir/*"
 transformation_command["rotate4"]="mogrify -path rotate4 -rotate 4 $benchmark_base_dir/*"
 transformation_command["rotate5"]="mogrify -path rotate5 -rotate 5 $benchmark_base_dir/*"
+transformation_command["crop4"]="mogrify -path crop4 -crop 96%x100%+0+0 $benchmark_base_dir/*"
+transformation_command["crop8"]="mogrify -path crop8 -crop 92%x100%+0+0 $benchmark_base_dir/*"
 transformation_command["crop10"]="mogrify -path crop10 -crop 90%x100%+0+0 $benchmark_base_dir/*"
+transformation_command["crop12"]="mogrify -path crop12 -crop 88%x100%+0+0 $benchmark_base_dir/*"
+transformation_command["crop16"]="mogrify -path crop16 -crop 84%x100%+0+0 $benchmark_base_dir/*"
+transformation_command["crop20"]="mogrify -path crop20 -crop 80%x100%+0+0 $benchmark_base_dir/*"
 
 relevant_items=$((${#transformations[@]} + 1))
