@@ -27,8 +27,8 @@ benchmark_non_indexed_dir="non-indexed"
 declare -a functions=("DCT" "MH" "RV")
 
 # Modifications to apply on images
-# Possible values: "blur" "gray" "half" "compress1" "compress5" "compress10" "compress20" "compress40" "compress80" "rotate1" "rotate2" "rotate3" "rotate4" "rotate5" "crop4" "crop8" "crop10" "crop12" "crop16" "crop20"
-declare -a transformations=("blur" "gray" "half" "compress10" "rotate5" "crop10")
+# Possible values: "blur" "gray" "resize50" "compress1" "compress5" "compress10" "compress20" "compress40" "compress80" "rotate1" "rotate2" "rotate3" "rotate4" "rotate5" "crop4" "crop8" "crop10" "crop12" "crop16" "crop20"
+declare -a transformations=("blur" "gray" "resize50" "compress10" "rotate5" "crop10")
 
 # Set to "true" to perform a benchmark on individual transformations
 individual_transformation_benchmark=true
@@ -39,7 +39,11 @@ multiple_transformation_benchmark=true
 declare -A transformation_name
 transformation_name["blur"]="Blur"
 transformation_name["gray"]="Grayscale"
-transformation_name["half"]="Half size"
+transformation_name["resize5"]="Resize 5%"
+transformation_name["resize10"]="Resize 10%"
+transformation_name["resize25"]="Resize 25%"
+transformation_name["resize50"]="Resize 50%"
+transformation_name["resize75"]="Resize 75%"
 transformation_name["compress1"]="Compress with quality 1"
 transformation_name["compress5"]="Compress with quality 5"
 transformation_name["compress10"]="Compress with quality 10"
@@ -61,7 +65,11 @@ transformation_name["crop20"]="Crop right 20%"
 declare -A transformation_command
 transformation_command["blur"]="mogrify -path blur -blur 4x2 $benchmark_base_dir/*"
 transformation_command["gray"]="mogrify -path gray -type Grayscale $benchmark_base_dir/*"
-transformation_command["half"]="mogrify -path half -resize 50% $benchmark_base_dir/*"
+transformation_command["resize5"]="mogrify -path resize5 -resize 5% $benchmark_base_dir/*"
+transformation_command["resize10"]="mogrify -path resize10 -resize 10% $benchmark_base_dir/*"
+transformation_command["resize25"]="mogrify -path resize25 -resize 25% $benchmark_base_dir/*"
+transformation_command["resize50"]="mogrify -path resize50 -resize 50% $benchmark_base_dir/*"
+transformation_command["resize75"]="mogrify -path resize75 -resize 75% $benchmark_base_dir/*"
 transformation_command["compress1"]="mogrify -path compress1 -format jpg -quality 1 $benchmark_base_dir/*"
 transformation_command["compress5"]="mogrify -path compress5 -format jpg -quality 5 $benchmark_base_dir/*"
 transformation_command["compress10"]="mogrify -path compress10 -format jpg -quality 10 $benchmark_base_dir/*"
