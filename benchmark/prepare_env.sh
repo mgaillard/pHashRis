@@ -4,7 +4,7 @@
 sudo apt install -y build-essential cimg-dev libsndfile1 libsndfile1-dev libsamplerate0 libsamplerate0-dev libmpg123-0 libmpg123-dev git libboost-all-dev cmake unzip imagemagick gnuplot
 
 # Download MIRFLICKR25000
-wget press.liacs.nl/mirflickr/mirflickr25k/mirflickr25k.zip
+wget press.liacs.nl/mirflickr/mirflickr25k.v2/mirflickr25k.zip
 unzip mirflickr25k.zip
 rm mirflickr25k.zip
 cd mirflickr
